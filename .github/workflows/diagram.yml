@@ -23,7 +23,7 @@ jobs:
           pip install pydeps
 
       - name: Generate Module Diagram
-        run: pydeps src --noshow --output codebase.png --only src
+        run: pydeps src --noshow -o codebase.png --only src
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
