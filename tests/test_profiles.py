@@ -1,4 +1,5 @@
 from django.test import TestCase, RequestFactory
+from django.urls import reverse
 from unittest.mock import MagicMock
 from profiles.views import AdminValidationView, tab_dashboard, tab_account, tab_offers, tab_students
 from accounts.models import User, CompanyProfile, InstitutionProfile
@@ -9,10 +10,10 @@ class ProfilesViewsTest(TestCase):
 
     def test_admin_validation_context_merging(self):
         """Verify that companies and institutions are correctly merged in the context."""
-        u1 = User.objects.create(username="c1", role=User.Role.COMPANY)
+        u1 = User.objects.create(username="c1", role=User.Role.COMPANY, email="c1@test.com")
         CompanyProfile.objects.create(user=u1, organisation_name="Comp1", is_approved=False)
         
-        u2 = User.objects.create(username="i1", role=User.Role.INSTITUTION)
+        u2 = User.objects.create(username="i1", role=User.Role.INSTITUTION, email="i1@test.com")
         InstitutionProfile.objects.create(user=u2, organisation_name="Inst1", is_approved=False)
 
         request = self.factory.get("/profiles/admin-validation/")
@@ -63,4 +64,4 @@ class ProfilesViewsTest(TestCase):
         view.setup(request)
         response = view.dispatch(request)
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, "profiles:account_space")
+        self.assertEqual(response.url, reverse("profiles:account_space"))
