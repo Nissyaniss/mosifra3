@@ -1,4 +1,4 @@
-import random
+import secrets
 import uuid
 from datetime import timedelta
 from pathlib import Path
@@ -39,7 +39,7 @@ SESSION_RESET_EMAIL = "password_reset_email"
 
 
 def _send_two_factor_code(session, email, subject, message_template):
-    code = f"{random.randint(0, 999999):06d}"
+    code = f"{secrets.SystemRandom().randint(0, 999999):06d}"
     session[SESSION_CODE_KEY] = code
     session[SESSION_EXPIRY_KEY] = (timezone.now() + timedelta(minutes=10)).isoformat()
     session[SESSION_EMAIL_KEY] = email

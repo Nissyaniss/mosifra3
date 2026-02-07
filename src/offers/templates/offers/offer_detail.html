@@ -37,7 +37,7 @@
       <div class="md:col-span-2 space-y-6">
         <div>
           <h2 class="text-lg font-bold text-black mb-2">Description :</h2>
-          <div class="text-slate-700 prose">{{ offer.description|safe }}</div>
+          <div class="text-slate-700 prose">{{ offer.description }}</div>
         </div>
       </div>
 
@@ -66,7 +66,7 @@
         {% if company.description %}
         <div>
           <h3 class="font-bold text-black mb-2">Description de l'entreprise :</h3>
-          <div class="text-slate-700 text-sm">{{ company.description|safe }}</div>
+          <div class="text-slate-700 text-sm">{{ company.description }}</div>
         </div>
         {% endif %}
       </div>

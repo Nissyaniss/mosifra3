@@ -5,6 +5,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.mail import send_mail
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_GET
 from django.views.generic import TemplateView
 
 from accounts.models import CompanyProfile, InstitutionProfile, Offer, StudentProfile, User
@@ -101,21 +102,11 @@ class AdminValidationView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         pending_companies = CompanyProfile.objects.filter(is_approved=False).select_related("user")
         pending_institutions = InstitutionProfile.objects.filter(is_approved=False).select_related("user")
+        
         pending_accounts = []
-        for profile in pending_companies:
+        for profile, type_label in [(p, "company") for p in pending_companies] + [(p, "institution") for p in pending_institutions]:
             pending_accounts.append({
-                "type": "company",
-                "id": profile.id,
-                "name": profile.organisation_name,
-                "phone": profile.phone,
-                "location": profile.location,
-                "country_code": profile.country_code,
-                "email": profile.user.email,
-                "logo": profile.logo,
-            })
-        for profile in pending_institutions:
-            pending_accounts.append({
-                "type": "institution",
+                "type": type_label,
                 "id": profile.id,
                 "name": profile.organisation_name,
                 "phone": profile.phone,
@@ -199,16 +190,19 @@ class AccountDetailView(LoginRequiredMixin, TemplateView):
 
 
 @login_required
+@require_GET
 def tab_dashboard(request):
     return render(request, "profiles/partials/tab_dashboard.html")
 
 
 @login_required
+@require_GET
 def tab_account(request):
     return render(request, "profiles/partials/tab_account.html")
 
 
 @login_required
+@require_GET
 def tab_offers(request):
     if request.user.role not in (User.Role.COMPANY, User.Role.INSTITUTION):
         return HttpResponse("", status=403)
@@ -222,6 +216,7 @@ def tab_offers(request):
 
 
 @login_required
+@require_GET
 def tab_students(request):
     if request.user.role != User.Role.INSTITUTION:
         return HttpResponse("", status=403)

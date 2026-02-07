@@ -10,6 +10,7 @@ from django.http import Http404, HttpResponse
 from django.shortcuts import render
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
+from django.views.decorators.http import require_GET, require_POST
 from django.views.generic import FormView
 
 from accounts.forms import InvitationUploadForm
@@ -109,6 +110,7 @@ class InvitationUploadView(LoginRequiredMixin, FormView):
         return report
 
 
+@require_GET
 def download_csv_model(request):
     response = HttpResponse(content_type="text/csv; charset=utf-8")
     response["Content-Disposition"] = 'attachment; filename="modele_etudiants.csv"'
@@ -132,75 +134,89 @@ def download_csv_model(request):
     return response
 
 
+@require_POST
 def preview_csv(request):
-    if request.method == "POST" and request.FILES.get("csv_file"):
+    if request.FILES.get("csv_file"):
         file = request.FILES["csv_file"]
-        raw_data = file.read(4096) 
-        file.seek(0) 
-        
-        text = None
-        encoding = "utf-8"
-        
-        try:
-            text = raw_data.decode("utf-8")
-        except UnicodeDecodeError:
-            try:
-                temp_text = raw_data.decode("cp1252")
-                if "\u201a" in temp_text or "\u2026" in temp_text or "\u2021" in temp_text:
-                     text = raw_data.decode("cp850")
-                     encoding = "cp850"
-                else:
-                    text = temp_text
-                    encoding = "cp1252"
-            except UnicodeDecodeError:
-                text = raw_data.decode("latin-1", errors="replace")
-                encoding = "latin-1"
+        raw_data = file.read(4096)
+        file.seek(0)
 
-        first_line = text.splitlines()[0] if text else ""
-        delimiter = ","
-        if first_line:
-            semi = first_line.count(";")
-            comma = first_line.count(",")
-            tab = first_line.count("\t")
-            if semi > comma and semi > tab:
-                delimiter = ";"
-            elif tab > comma and tab > semi:
-                delimiter = "\t"
-        
-        rows = []
-        if text:
-            lines = text.splitlines()
-            reader = csv.reader(lines, delimiter=delimiter)
-            try:
-                for i, row in enumerate(reader):
-                    if i >= 6: 
-                        break
-                    if row:
-                        if i == 0 and row and row[0].startswith("\ufeff"):
-                            row[0] = row[0].replace("\ufeff", "")
-                        rows.append(row)
-            except csv.Error:
-                pass
+        text = _detect_encoding(raw_data)
+        if not text:
+             return render(request, "invitations/partials/csv_preview.html", {"rows": []})
 
-        if rows and len(rows[0]) == 1:
-            first_cell = rows[0][0]
-            if delimiter in first_cell:
-                new_rows = []
-                for row in rows:
-                    if len(row) == 1:
-                        content = row[0]
-                        if content.startswith('"') and content.endswith('"'):
-                            content = content[1:-1]
-                        sub_reader = csv.reader([content], delimiter=delimiter)
-                        try:
-                            new_row = next(sub_reader)
-                            new_rows.append(new_row)
-                        except StopIteration:
-                            new_rows.append(row)
-                    else:
-                        new_rows.append(row)
-                rows = new_rows
+        delimiter = _detect_delimiter(text)
+        rows = _parse_csv_rows(text, delimiter)
+        rows = _cleanup_rows(rows, delimiter)
 
         return render(request, "invitations/partials/csv_preview.html", {"rows": rows})
-    
+
     return HttpResponse("")
+
+
+def _detect_encoding(raw_data):
+    try:
+        return raw_data.decode("utf-8")
+    except UnicodeDecodeError:
+        try:
+            text = raw_data.decode("cp1252")
+            if "\u201a" in text or "\u2026" in text or "\u2021" in text:
+                return raw_data.decode("cp850")
+            return text
+        except UnicodeDecodeError:
+            return raw_data.decode("latin-1", errors="replace")
+
+
+def _detect_delimiter(text):
+    first_line = text.splitlines()[0] if text else ""
+    delimiter = ","
+    if first_line:
+        semi = first_line.count(";")
+        comma = first_line.count(",")
+        tab = first_line.count("\t")
+        if semi > comma and semi > tab:
+            delimiter = ";"
+        elif tab > comma and tab > semi:
+            delimiter = "\t"
+    return delimiter
+
+
+def _parse_csv_rows(text, delimiter):
+    rows = []
+    if text:
+        lines = text.splitlines()
+        reader = csv.reader(lines, delimiter=delimiter)
+        try:
+            for i, row in enumerate(reader):
+                if i >= 6:
+                    break
+                if row:
+                    if i == 0 and row and row[0].startswith("\ufeff"):
+                        row[0] = row[0].replace("\ufeff", "")
+                    rows.append(row)
+        except csv.Error:
+            pass
+    return rows
+
+
+def _cleanup_rows(rows, delimiter):
+    # Handle case where delimiter sniffer failed and everything is in one cell
+    if rows and len(rows[0]) == 1:
+        first_cell = rows[0][0]
+        if delimiter in first_cell:
+            new_rows = []
+            for row in rows:
+                if len(row) == 1:
+                    content = row[0]
+                    if content.startswith('"') and content.endswith('"'):
+                        content = content[1:-1]
+                    sub_reader = csv.reader([content], delimiter=delimiter)
+                    try:
+                        new_row = next(sub_reader)
+                        new_rows.append(new_row)
+                    except StopIteration:
+                        new_rows.append(row)
+                else:
+                    new_rows.append(row)
+            return new_rows
+    return rows
