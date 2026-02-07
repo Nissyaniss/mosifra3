@@ -5,22 +5,22 @@ from django.contrib.auth import logout
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import include, path
-from django.views.decorators.http import require_GET, require_POST
+from django.views.decorators.http import require_GET
 
 
-@require_get
+@require_GET
 def home(request):
     return render(request, "home.html")
 
 
-@require_get
+@require_GET
 def ping(request):
     return HttpResponse(
         "<p class='text-emerald-700 font-medium'>HTMX a bien chargé ce message ✅</p>"
     )
 
 
-@require_get
+@require_GET
 def logout_view(request):
     logout(request)
     return redirect("home")
