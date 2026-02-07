@@ -5,18 +5,22 @@ from django.contrib.auth import logout
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import include, path
+from django.views.decorators.http import require_GET, require_POST
 
 
+@require_get
 def home(request):
     return render(request, "home.html")
 
 
+@require_get
 def ping(request):
     return HttpResponse(
         "<p class='text-emerald-700 font-medium'>HTMX a bien chargé ce message ✅</p>"
     )
 
 
+@require_get
 def logout_view(request):
     logout(request)
     return redirect("home")
@@ -34,4 +38,5 @@ urlpatterns = [
 ]
 
 if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.MEDIA_URL,
+                          document_root=settings.MEDIA_ROOT)
