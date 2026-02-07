@@ -2,186 +2,214 @@
 {% load static %}
 
 {% block content %}
-  <section class="bg-brand-surface w-[100vw] ml-[calc(50%-50vw)] border-y border-[#cfdffc]" style="padding: 2.5rem 0;">
-    <div class="max-w-4xl mx-auto px-4 text-center">
-      <h1 class="text-3xl md:text-[2.6rem] font-semibold text-slate-900">Modifier l'annonce</h1>
+<section class="bg-brand-surface w-[100vw] ml-[calc(50%-50vw)] border-y border-[#cfdffc]" style="padding: 2.5rem 0;">
+  <div class="max-w-4xl mx-auto px-4 text-center">
+    <h1 class="text-3xl md:text-[2.6rem] font-semibold text-slate-900">Modifier l'annonce</h1>
+  </div>
+</section>
+
+<div class="max-w-2xl mx-auto px-4 mt-12 space-y-10 mb-20">
+  <form method="post" class="space-y-6" novalidate>
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+    <div class="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+      {{ form.non_field_errors }}
     </div>
-  </section>
+    {% endif %}
 
-  <div class="max-w-2xl mx-auto px-4 mt-12 space-y-10 mb-20">
-    <form method="post" class="space-y-6" novalidate>
-      {% csrf_token %}
+    <div>
+      <label class="block text-sm font-medium text-slate-700 mb-1">Entreprise</label>
+      <input type="text" value="{{ company_name }}" disabled
+        class="w-full rounded-full border border-slate-300 bg-slate-100 px-5 py-3 text-sm text-slate-600 cursor-not-allowed">
+    </div>
 
-      {% if form.non_field_errors %}
-        <div class="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          {{ form.non_field_errors }}
-        </div>
-      {% endif %}
+    <div>
+      <label class="block text-sm font-medium text-slate-700 mb-1">Nom du poste</label>
+      <input type="text" name="title" maxlength="255" value="{{ object.title }}"
+        class="w-full rounded-full border border-slate-400 px-5 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-primary bg-white"
+        required>
+      {% if form.title.errors %}<p class="text-sm text-red-600 mt-1">{{ form.title.errors|striptags }}</p>{% endif %}
+    </div>
 
+    <div class="grid gap-5 md:grid-cols-2">
       <div>
-        <label class="block text-sm font-medium text-slate-700 mb-1">Entreprise</label>
-        <input type="text" value="{{ company_name }}" disabled class="w-full rounded-full border border-slate-300 bg-slate-100 px-5 py-3 text-sm text-slate-600 cursor-not-allowed">
-      </div>
-
-      <div>
-        <label class="block text-sm font-medium text-slate-700 mb-1">Nom du poste</label>
-        <input type="text" name="title" maxlength="255" value="{{ object.title }}" class="w-full rounded-full border border-slate-400 px-5 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-primary bg-white" required>
-        {% if form.title.errors %}<p class="text-sm text-red-600 mt-1">{{ form.title.errors|striptags }}</p>{% endif %}
-      </div>
-
-      <div class="grid gap-5 md:grid-cols-2">
-        <div>
-          <label class="block text-sm font-medium text-slate-700 mb-1">Salaire</label>
-          <div class="flex rounded-full border border-slate-400 overflow-hidden bg-white">
-            <input type="text" inputmode="numeric" name="salary_amount" style="border:none;outline:none;box-shadow:none;" class="flex-1 min-w-0 px-4 py-3 text-sm text-slate-900 bg-transparent focus:outline-none" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-            <select name="salary_currency" style="border:none;outline:none;box-shadow:none;" class="shrink-0 px-2 py-3 text-sm text-slate-900 bg-transparent focus:outline-none cursor-pointer">
-              <option value="€" {% if '€' in object.salary %}selected{% endif %}>€</option>
-              <option value="$" {% if '$' in object.salary %}selected{% endif %}>$</option>
-              <option value="£" {% if '£' in object.salary %}selected{% endif %}>£</option>
-              <option value="CHF" {% if 'CHF' in object.salary %}selected{% endif %}>CHF</option>
-            </select>
-            <select name="salary_period" style="border:none;outline:none;box-shadow:none;" class="shrink-0 pl-2 pr-8 py-3 text-sm text-slate-900 bg-transparent focus:outline-none cursor-pointer">
-              <option value="/mois" {% if '/mois' in object.salary %}selected{% endif %}>/mois</option>
-              <option value="/an" {% if '/an' in object.salary %}selected{% endif %}>/an</option>
-            </select>
-          </div>
-          <input type="hidden" name="salary" id="salary_hidden" value="{{ object.salary }}">
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-slate-700 mb-1">Type de contrat</label>
-          <select name="contract_type" class="w-full rounded-full border border-slate-400 px-5 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-primary bg-white">
-            <option value="stage" {% if object.contract_type == 'stage' %}selected{% endif %}>Stage</option>
-            <option value="alternance" {% if object.contract_type == 'alternance' %}selected{% endif %}>Alternance</option>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Salaire</label>
+        <div class="flex rounded-full border border-slate-400 overflow-hidden bg-white">
+          <input type="text" inputmode="numeric" name="salary_amount" style="border:none;outline:none;box-shadow:none;"
+            class="flex-1 min-w-0 px-4 py-3 text-sm text-slate-900 bg-transparent focus:outline-none"
+            oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+          <select name="salary_currency" style="border:none;outline:none;box-shadow:none;"
+            class="shrink-0 px-2 py-3 text-sm text-slate-900 bg-transparent focus:outline-none cursor-pointer">
+            <option value="€" {% if '€' in object.salary %}selected{% endif %}>€</option>
+            <option value="$" {% if '$' in object.salary %}selected{% endif %}>$</option>
+            <option value="£" {% if '£' in object.salary %}selected{% endif %}>£</option>
+            <option value="CHF" {% if 'CHF' in object.salary %}selected{% endif %}>CHF</option>
+          </select>
+          <select name="salary_period" style="border:none;outline:none;box-shadow:none;"
+            class="shrink-0 pl-2 pr-8 py-3 text-sm text-slate-900 bg-transparent focus:outline-none cursor-pointer">
+            <option value="/mois" {% if '/mois' in object.salary %}selected{% endif %}>/mois</option>
+            <option value="/an" {% if '/an' in object.salary %}selected{% endif %}>/an</option>
           </select>
         </div>
+        <input type="hidden" name="salary" id="salary_hidden" value="{{ object.salary }}">
       </div>
-
       <div>
-        <label class="block text-sm font-medium text-slate-700 mb-1">Ville de l'entreprise</label>
-        <input type="text" name="location" maxlength="255" value="{{ object.location }}" class="w-full rounded-full border border-slate-400 px-5 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-primary bg-white" required>
-        {% if form.location.errors %}<p class="text-sm text-red-600 mt-1">{{ form.location.errors|striptags }}</p>{% endif %}
+        <label class="block text-sm font-medium text-slate-700 mb-1">Type de contrat</label>
+        <select name="contract_type"
+          class="w-full rounded-full border border-slate-400 px-5 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-primary bg-white">
+          <option value="stage" {% if object.contract_type=='stage' %}selected{% endif %}>Stage</option>
+          <option value="alternance" {% if object.contract_type=='alternance' %}selected{% endif %}>Alternance</option>
+        </select>
       </div>
+    </div>
 
-      <div>
-        <label class="block text-sm font-medium text-slate-700 mb-1">Compétences (8 max, Entrée pour valider)</label>
-        <div id="skills-container" class="w-full rounded-2xl border border-slate-400 px-4 py-2 flex flex-wrap items-center gap-2 min-h-[48px] bg-white">
-          <div id="skills-tags" class="flex flex-wrap gap-2"></div>
-          <input type="text" id="skills-input" maxlength="20" class="flex-1 min-w-[100px] text-sm bg-transparent focus:outline-none" style="border:none;outline:none;box-shadow:none;" placeholder="Ajouter puis Entrée...">
-        </div>
-        <input type="hidden" name="skills" id="skills-hidden" value="{{ object.skills }}">
+    <div>
+      <label class="block text-sm font-medium text-slate-700 mb-1">Ville de l'entreprise</label>
+      <input type="text" name="location" maxlength="255" value="{{ object.location }}"
+        class="w-full rounded-full border border-slate-400 px-5 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-primary bg-white"
+        required>
+      {% if form.location.errors %}<p class="text-sm text-red-600 mt-1">{{ form.location.errors|striptags }}</p>{% endif
+      %}
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium text-slate-700 mb-1">Compétences (8 max, Entrée pour valider)</label>
+      <div id="skills-container"
+        class="w-full rounded-2xl border border-slate-400 px-4 py-2 flex flex-wrap items-center gap-2 min-h-[48px] bg-white">
+        <div id="skills-tags" class="flex flex-wrap gap-2"></div>
+        <input type="text" id="skills-input" maxlength="20"
+          class="flex-1 min-w-[100px] text-sm bg-transparent focus:outline-none"
+          style="border:none;outline:none;box-shadow:none;" placeholder="Ajouter puis Entrée...">
       </div>
-      <script>
-        (function() {
-          const container = document.getElementById('skills-tags');
-          const input = document.getElementById('skills-input');
-          const hidden = document.getElementById('skills-hidden');
-          let skills = hidden.value ? hidden.value.split(',').filter(s => s.trim()) : [];
-          function render() {
-            container.innerHTML = skills.map((s, i) => 
-              `<span class="bg-slate-200 text-slate-800 border border-slate-400 px-3 py-1 rounded-full text-sm flex items-center gap-1">${s}<button type="button" data-i="${i}" class="ml-1 text-slate-500 hover:text-slate-700">&times;</button></span>`
-            ).join('');
-            hidden.value = skills.join(',');
-            input.style.display = skills.length >= 8 ? 'none' : 'block';
+      <input type="hidden" name="skills" id="skills-hidden" value="{{ object.skills }}">
+    </div>
+    <script>
+      (function() {
+        const container = document.getElementById('skills-tags');
+        const input = document.getElementById('skills-input');
+        const hidden = document.getElementById('skills-hidden');
+        let skills = hidden.value ? hidden.value.split(',').filter(s => s.trim()) : [];
+        function render() {
+          container.innerHTML = skills.map((s, i) =>
+            `<span class="bg-slate-200 text-slate-800 border border-slate-400 px-3 py-1 rounded-full text-sm flex items-center gap-1">${s}<button type="button" data-i="${i}" class="ml-1 text-slate-500 hover:text-slate-700">&times;</button></span>`
+          ).join('');
+          hidden.value = skills.join(',');
+          input.style.display = skills.length >= 8 ? 'none' : 'block';
+        }
+        render();
+        input.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter' || e.key === ',') {
+            e.preventDefault();
+            const val = input.value.trim().substring(0, 20);
+            if (val && !skills.includes(val) && skills.length < 8) { skills.push(val); render(); }
+            input.value = '';
           }
-          render();
-          input.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' || e.key === ',') {
-              e.preventDefault();
-              const val = input.value.trim().substring(0, 20);
-              if (val && !skills.includes(val) && skills.length < 8) { skills.push(val); render(); }
-              input.value = '';
-            }
-          });
-          container.addEventListener('click', function(e) {
-            if (e.target.tagName === 'BUTTON') {
-              skills.splice(parseInt(e.target.dataset.i), 1);
-              render();
-            }
-          });
-        })();
-      </script>
-
-      <div class="grid gap-5 md:grid-cols-2">
-        <div>
-          <label class="block text-sm font-medium text-slate-700 mb-1">Téléphone</label>
-          <input type="text" name="phone" maxlength="20" value="{{ object.phone }}" class="w-full rounded-full border border-slate-400 px-5 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-primary bg-white" oninput="this.value = this.value.replace(/[^0-9+\s]/g, '')">
-        </div>
-        <div class="flex items-center pt-6">
-          <input type="checkbox" name="remote" id="id_remote" class="w-5 h-5 rounded border-slate-400 text-brand-primary focus:ring-brand-primary" {% if object.remote %}checked{% endif %}>
-          <label for="id_remote" class="ml-2 text-sm text-slate-700">Télétravail</label>
-        </div>
-      </div>
-      <script>
-        (function() {
-          const amt = document.querySelector('[name="salary_amount"]');
-          const cur = document.querySelector('[name="salary_currency"]');
-          const per = document.querySelector('[name="salary_period"]');
-          const hidden = document.getElementById('salary_hidden');
-          function formatNum(n) { return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' '); }
-          function update() { if(amt.value) hidden.value = formatNum(amt.value) + cur.value + ' ' + per.value; }
-          amt.addEventListener('input', update);
-          cur.addEventListener('change', update);
-          per.addEventListener('change', update);
-          // Préremplir le montant depuis la valeur stockée
-          const stored = hidden.value || '';
-          const numMatch = stored.replace(/\s/g, '').match(/^(\d+)/);
-          if (numMatch) amt.value = numMatch[1];
-        })();
-      </script>
-
-      <div class="grid gap-5 md:grid-cols-2">
-        <div>
-          <label class="block text-sm font-medium text-slate-700 mb-1">Date début</label>
-          <input type="date" name="start_date" id="start_date_input" value="{{ object.start_date }}" class="w-full rounded-full border border-slate-400 px-5 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-primary bg-white cursor-pointer">
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-slate-700 mb-1">Durée</label>
-          <div class="flex rounded-full border border-slate-400 overflow-hidden bg-white">
-            <input type="number" name="duration_value" min="1" max="52" value="{{ object.duration.split.0 }}" style="border:none;outline:none;box-shadow:none;" class="w-20 px-4 py-3 text-sm text-slate-900 bg-transparent focus:outline-none text-center">
-            <select name="duration_unit" style="border:none;outline:none;box-shadow:none;" class="flex-1 px-4 py-3 text-sm text-slate-900 bg-transparent focus:outline-none cursor-pointer">
-              <option value="semaines" {% if 'semaines' in object.duration %}selected{% endif %}>semaines</option>
-              <option value="mois" {% if 'mois' in object.duration %}selected{% endif %}>mois</option>
-            </select>
-          </div>
-          <input type="hidden" name="duration" id="duration_hidden" value="{{ object.duration }}">
-        </div>
-      </div>
-      <script>
-        (function() {
-          const val = document.querySelector('[name="duration_value"]');
-          const unit = document.querySelector('[name="duration_unit"]');
-          const hidden = document.getElementById('duration_hidden');
-          function update() { hidden.value = val.value + ' ' + unit.value; }
-          val.addEventListener('input', update);
-          unit.addEventListener('change', update);
-        })();
-      </script>
-
-      <div>
-        <label class="block text-sm font-medium text-slate-700 mb-1">Description du poste</label>
-        <div class="border border-slate-400 rounded-2xl overflow-hidden bg-white">
-          <div class="flex gap-1 px-3 py-2 border-b border-slate-200 bg-slate-50">
-            <button type="button" onclick="formatText('bold')" class="px-2 py-1 text-sm font-bold hover:bg-slate-200 rounded" title="Gras">G</button>
-            <button type="button" onclick="formatText('italic')" class="px-2 py-1 text-sm italic hover:bg-slate-200 rounded" title="Italique">I</button>
-            <button type="button" onclick="formatText('underline')" class="px-2 py-1 text-sm underline hover:bg-slate-200 rounded" title="Souligné">S</button>
-          </div>
-          <div id="description_editor" contenteditable="true" style="min-height:150px;border:none;outline:none;" class="w-full px-4 py-3 text-sm text-slate-900 focus:outline-none">{{ object.description|safe }}</div>
-        </div>
-        <input type="hidden" name="description" id="description_hidden" value="{{ object.description }}">
-        {% if form.description.errors %}<p class="text-sm text-red-600 mt-1">{{ form.description.errors|striptags }}</p>{% endif %}
-      </div>
-      <script>
-        function formatText(cmd) { document.execCommand(cmd, false, null); }
-        document.getElementById('description_editor').addEventListener('input', function() {
-          document.getElementById('description_hidden').value = this.innerHTML;
         });
-      </script>
+        container.addEventListener('click', function(e) {
+          if (e.target.tagName === 'BUTTON') {
+            skills.splice(parseInt(e.target.dataset.i), 1);
+            render();
+          }
+        });
+      })();
+    </script>
 
-      <div class="text-center pt-4">
-        <button type="submit" class="inline-flex items-center justify-center rounded-full bg-brand-primary px-12 py-3 text-lg font-semibold text-white hover:bg-brand-primaryDark transition">
-          Enregistrer
-        </button>
+    <div class="grid gap-5 md:grid-cols-2">
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Téléphone</label>
+        <input type="text" name="phone" maxlength="20" value="{{ object.phone }}"
+          class="w-full rounded-full border border-slate-400 px-5 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-primary bg-white"
+          oninput="this.value = this.value.replace(/[^0-9+\s]/g, '')">
       </div>
-    </form>
-  </div>
+      <div class="flex items-center pt-6">
+        <input type="checkbox" name="remote" id="id_remote"
+          class="w-5 h-5 rounded border-slate-400 text-brand-primary focus:ring-brand-primary" {% if object.remote
+          %}checked{% endif %}>
+        <label for="id_remote" class="ml-2 text-sm text-slate-700">Télétravail</label>
+      </div>
+    </div>
+    <script>
+      (function() {
+        const amt = document.querySelector('[name="salary_amount"]');
+        const cur = document.querySelector('[name="salary_currency"]');
+        const per = document.querySelector('[name="salary_period"]');
+        const hidden = document.getElementById('salary_hidden');
+        function formatNum(n) { return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' '); }
+        function update() { if (amt.value) hidden.value = formatNum(amt.value) + cur.value + ' ' + per.value; }
+        amt.addEventListener('input', update);
+        cur.addEventListener('change', update);
+        per.addEventListener('change', update);
+        // Préremplir le montant depuis la valeur stockée
+        const stored = hidden.value || '';
+        const numMatch = stored.replace(/\s/g, '').match(/^(\d+)/);
+        if (numMatch) amt.value = numMatch[1];
+      })();
+    </script>
+
+    <div class="grid gap-5 md:grid-cols-2">
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Date début</label>
+        <input type="date" name="start_date" id="start_date_input" value="{{ object.start_date }}"
+          class="w-full rounded-full border border-slate-400 px-5 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-primary bg-white cursor-pointer">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Durée</label>
+        <div class="flex rounded-full border border-slate-400 overflow-hidden bg-white">
+          <input type="number" name="duration_value" min="1" max="52" value="{{ object.duration.split.0 }}"
+            style="border:none;outline:none;box-shadow:none;"
+            class="w-20 px-4 py-3 text-sm text-slate-900 bg-transparent focus:outline-none text-center">
+          <select name="duration_unit" style="border:none;outline:none;box-shadow:none;"
+            class="flex-1 px-4 py-3 text-sm text-slate-900 bg-transparent focus:outline-none cursor-pointer">
+            <option value="semaines" {% if 'semaines' in object.duration %}selected{% endif %}>semaines</option>
+            <option value="mois" {% if 'mois' in object.duration %}selected{% endif %}>mois</option>
+          </select>
+        </div>
+        <input type="hidden" name="duration" id="duration_hidden" value="{{ object.duration }}">
+      </div>
+    </div>
+    <script>
+      (function() {
+        const val = document.querySelector('[name="duration_value"]');
+        const unit = document.querySelector('[name="duration_unit"]');
+        const hidden = document.getElementById('duration_hidden');
+        function update() { hidden.value = val.value + ' ' + unit.value; }
+        val.addEventListener('input', update);
+        unit.addEventListener('change', update);
+      })();
+    </script>
+
+    <div>
+      <label class="block text-sm font-medium text-slate-700 mb-1">Description du poste</label>
+      <div class="border border-slate-400 rounded-2xl overflow-hidden bg-white">
+        <div class="flex gap-1 px-3 py-2 border-b border-slate-200 bg-slate-50">
+          <button type="button" onclick="formatText('bold')"
+            class="px-2 py-1 text-sm font-bold hover:bg-slate-200 rounded" title="Gras">G</button>
+          <button type="button" onclick="formatText('italic')"
+            class="px-2 py-1 text-sm italic hover:bg-slate-200 rounded" title="Italique">I</button>
+          <button type="button" onclick="formatText('underline')"
+            class="px-2 py-1 text-sm underline hover:bg-slate-200 rounded" title="Souligné">S</button>
+        </div>
+        <div id="description_editor" contenteditable="true" style="min-height:150px;border:none;outline:none;"
+          class="w-full px-4 py-3 text-sm text-slate-900 focus:outline-none">{{ object.description }}</div>
+      </div>
+      <input type="hidden" name="description" id="description_hidden" value="{{ object.description }}">
+      {% if form.description.errors %}<p class="text-sm text-red-600 mt-1">{{ form.description.errors|striptags }}</p>{%
+      endif %}
+    </div>
+    <script>
+      function formatText(cmd) { document.execCommand(cmd, false, null); }
+      document.getElementById('description_editor').addEventListener('input', function() {
+        document.getElementById('description_hidden').value = this.innerHTML;
+      });
+    </script>
+
+    <div class="text-center pt-4">
+      <button type="submit"
+        class="inline-flex items-center justify-center rounded-full bg-brand-primary px-12 py-3 text-lg font-semibold text-white hover:bg-brand-primaryDark transition">
+        Enregistrer
+      </button>
+    </div>
+  </form>
+</div>
 {% endblock %}
